@@ -5,12 +5,12 @@ from vector2i import Vector2i
 from tetrimino import Tetrimino, TetriminoVariant
 
 def main():
-    grid = Grid((20, 10), 30)
+    grid = Grid(Vector2i(10, 20), 30)
     
     set_config_flags(ConfigFlags.FLAG_WINDOW_RESIZABLE)
     init_window(1280, 720, "Raytris")
         
-    current_tetrimino = Tetrimino(TetriminoVariant.L, color=BLUE, position=Vector2i(5,5))
+    current_tetrimino = Tetrimino.new()
     
     has_moved_down: bool = False
     
@@ -20,12 +20,14 @@ def main():
         # Move current tetrimino down if possible
         if int(get_time() * 1000) % fall_delay == 0:
             if not has_moved_down: # Prevent from moving multiple times in a single frame
-                has_moved_down = grid.try_move_tetrimino(current_tetrimino, Vector2i(0, 1))
+                has_hit_bottom = not grid.try_move_tetrimino(current_tetrimino, Vector2i(0, 1))
+                if has_hit_bottom:
+                    grid.freeze_tetrimino(current_tetrimino)
+                    current_tetrimino = Tetrimino.new()
+                has_moved_down = True
         else:
             has_moved_down = False
-        
-        # TODO: Next add the tetrimino hitting the bottom and becoming permanent
-        
+                
         # Move left/right
         if is_key_pressed(KeyboardKey.KEY_LEFT) or is_key_pressed(KeyboardKey.KEY_A):
             grid.try_move_tetrimino(current_tetrimino, Vector2i(-1, 0))

@@ -12,8 +12,8 @@ class Grid:
             cells (Vector2i): (rows, columns), the size of the grid
             cell_size (int): the size of each square cell in pixels, used for drawing
         """
-        self.array = [[BLANK for _ in range(cells[1])] for _ in range(cells[0])]
-        self.temp_array = [[BLANK for _ in range(cells[1])] for _ in range(cells[0])] # Used for drawing the currently moving tetrimino, cleared every draw
+        self.array = [[BLANK for _ in range(cells[0])] for _ in range(cells[1])]
+        self.temp_array = [[BLANK for _ in range(cells[0])] for _ in range(cells[1])] # Used for drawing the currently moving tetrimino, cleared every draw
         self.cell_size: int = cell_size
     
     def set_cell(self, cell: Vector2i, color: Color):
@@ -141,6 +141,19 @@ class Grid:
     
     def getV(self, pos: Vector2i) -> Color:
         return self.get(pos.x, pos.y)
+    
+    def freeze_tetrimino(self, tetrimino: Tetrimino):
+        """Adds a tetrimino to the persistent grid
+
+        Args:
+            tetrimino (Tetrimino): The tetrimino to add
+        """
+        for i in range(len(tetrimino.get_array())):
+            for j in range(len(tetrimino.get_array()[0])):
+                if tetrimino.get_array()[i][j] == True:
+                    cell_to_set: Vector2i = Vector2i(tetrimino.position[0] + j, tetrimino.position[1] + i)
+                    assert self.getV(cell_to_set) == BLANK # Don't overwrite an already written cell
+                    self.array[cell_to_set.y][cell_to_set.x] = tetrimino.color
     
     def __str__(self):
         output = ""

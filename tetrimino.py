@@ -1,6 +1,7 @@
 from enum import Enum
 from pyray import *
 from vector2i import Vector2i
+import random
 
 class Rotation:
         def __init__(self, direction: int = 0):
@@ -64,6 +65,14 @@ class Tetrimino:
             list: The array representation of the Tetrimino
         """
         return self.variant.value[self.rotation]
+    
+    @staticmethod
+    def new():
+        """Constructs a new random Tetrimino"""
+        variant = random.choice(list(TetriminoVariant)[1:])
+        rotation = Rotation(random.randint(0, 3))
+        color = random.choice([RED, GREEN, BLUE, YELLOW, PURPLE, ORANGE])
+        return Tetrimino(variant, rotation, color, Vector2i(5, 0))
     
     def __str__(self):
         return str(self.variant[self.rotation])
