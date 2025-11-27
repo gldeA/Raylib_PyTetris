@@ -58,7 +58,6 @@ class Grid:
             tetrimino.position += direction
             return True
     
-    # TODO: Make this work properly
     def back_in_bounds_dir(self, tetrimino: Tetrimino, move_direction: Vector2i = Vector2i(0, 0)) -> Vector2i:
         """Returns the direction that the tetrimino should move to get back in bounds
 
@@ -69,28 +68,29 @@ class Grid:
         Returns:
             Vector2i: The direction to move the tetrimino to get it back in bounds
         """
-        if self.can_tetrimino_move(tetrimino, move_direction):
-            return Vector2i(0, 0)
-        
-        for i in range(len(tetrimino.get_array())):
-            for j in range(len(tetrimino.get_array()[0])):
-                cell_to_check: Vector2i = Vector2i(tetrimino.position[0] + j, tetrimino.position[1] + i) + move_direction
-                # If this cell is out of bounds
-                if not self.is_in_boundsV(cell_to_check):
-                    if cell_to_check.y <= 0:
-                        return Vector2i(0, 1)
-                    if cell_to_check.x <= 0:
-                        return Vector2i(1, 0)
-                    if cell_to_check.y > len(self.array):
-                        return Vector2i(0, -1)
-                    if cell_to_check.x > len(self.array[0]):
-                        return Vector2i(-1, 0)
-                # If this cell is occupied
-                elif tetrimino.get_array()[i][j] == True and self.getV(cell_to_check) != BLANK:
-                    return Vector2i(0, -1) # This assumes it's just falling into one, it will need to be updated later, likely with a way to prevent the tetrimino from rotating
+        possible_directions = [Vector2i(0, 0), Vector2i(0, -1), Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
+        for direction in possible_directions:
+            if self.can_tetrimino_move(tetrimino, direction):
+                return direction
+        return None
+    
+    def try_move_back_in_bounds(self, tetrimino: Tetrimino, move_direction: Vector2i = Vector2i(0, 0)) -> bool:
+        """Attempts to move the tetrimino back in bounds after applying the optional move_direction translation.
+        Perfectly valid for tetriminoes already in bounds.
 
-        print("Invaild case for grid.back_in_bounds_direction")
-        return Vector2i(0, 0) # Something probably went wrong
+        Args:
+            tetrimino (Tetrimino): The tetrimino to move
+            move_direction (Vector2i, optional): The direction to move the tetrimino. Defaults to no movement.
+
+        Returns:
+            bool: Whether the movement was successful
+        """
+        bounds_dir = self.back_in_bounds_dir(tetrimino, move_direction)
+        if bounds_dir is not None: # No possible movement
+            tetrimino.position += (move_direction + bounds_dir)
+            return True
+        else:
+            return False
     
     def draw(self, current_tetrimino: Tetrimino):
         """Draws the grid on the screen"""

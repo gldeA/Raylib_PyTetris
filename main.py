@@ -24,6 +24,8 @@ def main():
         else:
             has_moved_down = False
         
+        # TODO: Next add the tetrimino hitting the bottom and becoming permanent
+        
         # Move left/right
         if is_key_pressed(KeyboardKey.KEY_LEFT) or is_key_pressed(KeyboardKey.KEY_A):
             grid.try_move_tetrimino(current_tetrimino, Vector2i(-1, 0))
@@ -33,7 +35,7 @@ def main():
         # Rotate
         if is_key_pressed(KeyboardKey.KEY_R):
             current_tetrimino.rotation += 1
-            current_tetrimino.position += grid.back_in_bounds_dir(current_tetrimino)
+            grid.try_move_back_in_bounds(current_tetrimino)
         
         begin_drawing()
         clear_background(WHITE)
