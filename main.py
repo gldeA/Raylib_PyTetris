@@ -2,34 +2,43 @@ from pyray import *
 
 from grid import Grid
 from vector2i import Vector2i
-from tetrimino import Tetrimino
+from tetrimino import Tetrimino, TetriminoVariant
 
 def main():
     grid = Grid((20, 10), 30)
     
     set_config_flags(ConfigFlags.FLAG_WINDOW_RESIZABLE)
     init_window(1280, 720, "Raytris")
+        
+    current_tetrimino = Tetrimino(TetriminoVariant.L, color=BLUE, position=Vector2i(5,5))
     
-    cell_pos = Vector2i(0, 0)
+    has_moved_down: bool = False
     
+    fall_delay = 500 # The number of milliseconds to delay between each fall tick, controls fall speed
     
     while not window_should_close():
-        grid.set_cell(cell_pos, BLANK)
-        if (is_key_pressed(KeyboardKey.KEY_UP) or is_key_pressed(KeyboardKey.KEY_W)) and grid.is_in_bounds(cell_pos.x, cell_pos.y - 1):
-            cell_pos.y -= 1
-        if (is_key_pressed(KeyboardKey.KEY_DOWN) or is_key_pressed(KeyboardKey.KEY_S)) and grid.is_in_bounds(cell_pos.x, cell_pos.y + 1):
-            cell_pos.y += 1
-        if (is_key_pressed(KeyboardKey.KEY_LEFT) or is_key_pressed(KeyboardKey.KEY_A)) and grid.is_in_bounds(cell_pos.x - 1, cell_pos.y):
-            cell_pos.x -= 1
-        if (is_key_pressed(KeyboardKey.KEY_RIGHT) or is_key_pressed(KeyboardKey.KEY_D)) and grid.is_in_bounds(cell_pos.x + 1, cell_pos.y):
-            cell_pos.x += 1
+        # Move current tetrimino down if possible
+        if int(get_time() * 1000) % fall_delay == 0:
+            if not has_moved_down: # Prevent from moving multiple times in a single frame
+                has_moved_down = grid.try_move_tetrimino(current_tetrimino, Vector2i(0, 1))
+        else:
+            has_moved_down = False
         
-        grid.set_cell(cell_pos, RED)
+        # Move left/right
+        if is_key_pressed(KeyboardKey.KEY_LEFT) or is_key_pressed(KeyboardKey.KEY_A):
+            grid.try_move_tetrimino(current_tetrimino, Vector2i(-1, 0))
+        if is_key_pressed(KeyboardKey.KEY_RIGHT) or is_key_pressed(KeyboardKey.KEY_D):
+            grid.try_move_tetrimino(current_tetrimino, Vector2i(1, 0))
+        
+        # Rotate
+        if is_key_pressed(KeyboardKey.KEY_R):
+            current_tetrimino.rotation += 1
+            current_tetrimino.position += grid.back_in_bounds_dir(current_tetrimino)
         
         begin_drawing()
         clear_background(WHITE)
         
-        grid.draw()
+        grid.draw(current_tetrimino)
         
         end_drawing()
         

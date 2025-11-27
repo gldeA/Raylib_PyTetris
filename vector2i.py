@@ -20,9 +20,15 @@ class Vector2i:
         else:
             raise IndexError("Index out of bounds for Vector2i")
     
+    def __add__(self, other):
+        return Vector2i(self.x + other.x, self.y + other.y)
+    
+    def __sub__(self, other):
+        return Vector2i(self.x - other.x, self.y - other.y)
+    
     def __str__(self):
         return f"({self.x}, {self.y})"
     
-    def __repr(self):
+    def __repr__(self):
         return f"Vector2i({self.x}, {self.y})"
     

@@ -1,4 +1,6 @@
 from enum import Enum
+from pyray import *
+from vector2i import Vector2i
 
 class Rotation:
         def __init__(self, direction: int = 0):
@@ -6,13 +8,10 @@ class Rotation:
             self.current_direction = direction
         
         def __add__(self, other):
-            if self.current_direction == 3:
-                return Rotation(0)
-            else:
-                return Rotation((self.current_direction + 1) % 4)
+            return Rotation((self.current_direction + 1) % 4)
         
         def __sub__(self, other):
-                return Rotation((self.current_direction - 1) % 4)
+            return Rotation((self.current_direction - 1) % 4)
         
         def get(self) -> str:
             return self.directions[self.current_direction]
@@ -23,7 +22,7 @@ class Rotation:
         def __eq__(self, other):
             return isinstance(other, Rotation) and self.current_direction == other.current_direction
     
-class Variant(Enum):
+class TetriminoVariant(Enum):
     NULL = {Rotation(0): [[]],
             Rotation(1): [[]],
             Rotation(2): [[]],
@@ -52,9 +51,19 @@ class Variant(Enum):
 
 class Tetrimino:
     """Stores the possible different tetriminoes"""
-    def __init__(self, variant: Variant = Variant.NULL, rotation: Rotation = Rotation(0)):
+    def __init__(self, variant: TetriminoVariant = TetriminoVariant.NULL, rotation: Rotation = Rotation(0), color: Color = BLACK, position: Vector2i = Vector2i(0, 0)):
         self.variant = variant
         self.rotation = rotation
+        self.color = color
+        self.position = position
+    
+    def get_array(self) -> list:
+        """Get the array representation of the variant in the current rotation
+
+        Returns:
+            list: The array representation of the Tetrimino
+        """
+        return self.variant.value[self.rotation]
     
     def __str__(self):
         return str(self.variant[self.rotation])
