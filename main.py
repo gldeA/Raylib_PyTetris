@@ -5,6 +5,10 @@ from vector2i import Vector2i
 from tetrimino import Tetrimino, TetriminoVariant
 
 def main():
+    FAST_FALL_DELAY = 50
+    STARTING_DELAY = 1000
+    DELAY_DECAY_RATE = .01
+    
     grid = Grid(Vector2i(10, 20), 30)
     
     set_config_flags(ConfigFlags.FLAG_WINDOW_RESIZABLE)
@@ -14,7 +18,8 @@ def main():
     
     has_moved_down: bool = False
     
-    fall_delay = 500 # The number of milliseconds to delay between each fall tick, controls fall speed
+    fall_delay = 1000 # The number of milliseconds to delay between each fall tick, controls fall speed
+    fall_delay_function = lambda time: int(STARTING_DELAY / ((DELAY_DECAY_RATE * time)**2 + 1)) # https://www.desmos.com/calculator/5xb1rmspe0
     
     while not window_should_close():
         # Move current tetrimino down if possible
@@ -35,9 +40,17 @@ def main():
             grid.try_move_tetrimino(current_tetrimino, Vector2i(1, 0))
         
         # Rotate
-        if is_key_pressed(KeyboardKey.KEY_R):
+        if is_key_pressed(KeyboardKey.KEY_UP) or is_key_pressed(KeyboardKey.KEY_W):
             current_tetrimino.rotation += 1
             grid.try_move_back_in_bounds(current_tetrimino)
+            
+        # Fast fall
+        if is_key_pressed(KeyboardKey.KEY_DOWN) or is_key_pressed(KeyboardKey.KEY_S):
+            grid.try_move_tetrimino(current_tetrimino, Vector2i(0, 1))
+        if is_key_down(KeyboardKey.KEY_DOWN) or is_key_down(KeyboardKey.KEY_S):
+            fall_delay = min(FAST_FALL_DELAY, fall_delay_function(get_time())) # Fast fall, but don't slow down if already faster than fast fall
+        else:
+            fall_delay = fall_delay_function(get_time())
         
         begin_drawing()
         clear_background(WHITE)

@@ -143,7 +143,7 @@ class Grid:
         return self.get(pos.x, pos.y)
     
     def freeze_tetrimino(self, tetrimino: Tetrimino):
-        """Adds a tetrimino to the persistent grid
+        """Adds a tetrimino to the persistent grid and checks for a complete line
 
         Args:
             tetrimino (Tetrimino): The tetrimino to add
@@ -154,6 +154,17 @@ class Grid:
                     cell_to_set: Vector2i = Vector2i(tetrimino.position[0] + j, tetrimino.position[1] + i)
                     assert self.getV(cell_to_set) == BLANK # Don't overwrite an already written cell
                     self.array[cell_to_set.y][cell_to_set.x] = tetrimino.color
+        
+        # Check for line
+        for r in range(len(self.array)):
+            is_complete = True
+            for c in range(len(self.array[0])):
+                if self.get(c, r) == BLANK:
+                    is_complete = False
+            if is_complete == True:
+                for row_above in range(r, 0, -1): # All the rows down to and including the complete one (except for the top one)
+                    print(row_above)
+                    self.array[row_above] = self.array[row_above - 1] # Set it equal to the row immediately above, dropping it down by one
     
     def __str__(self):
         output = ""
