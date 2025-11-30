@@ -4,21 +4,24 @@ from grid import Grid
 from vector2i import Vector2i
 from tetrimino import Tetrimino, TetriminoVariant
 
-# TODO: fix bugs (line going to top, crash on block placement)
+# TODO: fix bugs (line going to top, crash on block placement), show score
 
 def main():
-    FAST_FALL_DELAY = 50
+    FAST_FALL_DELAY = 60
     STARTING_DELAY = 500
     DELAY_DECAY_RATE = .025
     
-    grid = Grid(Vector2i(10, 20), 30)
+    grid = Grid(Vector2i(10, 20), 32)
+    
+    minigrid = Grid(Vector2i(4, 4), 20, Vector2i(212, -220))
     
     set_config_flags(ConfigFlags.FLAG_WINDOW_RESIZABLE)
     init_window(1280, 720, "Raytris")
     
     lr_press_time = 0.0 # Used for the Left/Right sliding after the initial press
     
-    current_tetrimino = Tetrimino.new()
+    current_tetrimino = Tetrimino.new(Vector2i(4, 0))
+    next_tetrimino = Tetrimino.new()
     
     has_moved_down: bool = False
     
@@ -39,7 +42,9 @@ def main():
                         amount_scored += 2 # 2 bonus points for getting a tetris, 4 rows in one move
                     score += amount_scored
                     print(score)
-                    current_tetrimino = Tetrimino.new()
+                    current_tetrimino = next_tetrimino
+                    current_tetrimino.position = Vector2i(4, 0)
+                    next_tetrimino = Tetrimino.new()
                 has_moved_down = True
         else:
             has_moved_down = False
@@ -51,9 +56,9 @@ def main():
         if is_key_pressed(KeyboardKey.KEY_RIGHT) or is_key_pressed(KeyboardKey.KEY_D):
             lr_press_time = get_time()
             grid.try_move_tetrimino(current_tetrimino, Vector2i(1, 0))
-        if (is_key_down(KeyboardKey.KEY_LEFT) or is_key_down(KeyboardKey.KEY_A)) and int((get_time() - lr_press_time) * 1000 + 1) % 150 == 0:
+        if (is_key_down(KeyboardKey.KEY_LEFT) or is_key_down(KeyboardKey.KEY_A)) and int((get_time() - lr_press_time) * 1000 + 1) % 125 == 0:
             grid.try_move_tetrimino(current_tetrimino, Vector2i(-1, 0))
-        if (is_key_down(KeyboardKey.KEY_RIGHT) or is_key_down(KeyboardKey.KEY_D)) and int((get_time() - lr_press_time) * 1000 + 1) % 150 == 0:
+        if (is_key_down(KeyboardKey.KEY_RIGHT) or is_key_down(KeyboardKey.KEY_D)) and int((get_time() - lr_press_time) * 1000 + 1) % 125 == 0:
             grid.try_move_tetrimino(current_tetrimino, Vector2i(1, 0))
         
         # Rotate
@@ -74,6 +79,9 @@ def main():
         clear_background(WHITE)
         
         grid.draw(current_tetrimino)
+        draw_text(f"Score: {score}", (get_screen_width() // 2) + 170, (get_screen_height() // 2) - 320, 28, BLACK)
+        draw_text("Next:", (get_screen_width() // 2) + 170, (get_screen_height() // 2) - 290, 28, BLACK)
+        minigrid.draw(next_tetrimino)
         
         end_drawing()
         

@@ -5,16 +5,18 @@ from tetrimino import Tetrimino
 
 class Grid:
     """A class that contains the game grid, should have only one instance"""    
-    def __init__(self, cells: Vector2i, cell_size: int):
+    def __init__(self, cells: Vector2i, cell_size: int, center: Vector2i = Vector2i(0, 0)):
         """Constructs a new Grid with the given number of cells and the cell_size
 
         Args:
             cells (Vector2i): (rows, columns), the size of the grid
             cell_size (int): the size of each square cell in pixels, used for drawing
+            center (Vector2i): The center position, offset from the center. Defaults to (0, 0)
         """
         self.array = [[BLANK for _ in range(cells[0])] for _ in range(cells[1])]
         self.temp_array = [[BLANK for _ in range(cells[0])] for _ in range(cells[1])] # Used for drawing the currently moving tetrimino, cleared every draw
         self.cell_size: int = cell_size
+        self.center = center
     
     def set_cell(self, cell: Vector2i, color: Color):
         self.array[cell.y][cell.x] = color
@@ -115,25 +117,25 @@ class Grid:
         
         for i in range(len(self.array)):
             for j in range(len(self.array[0])):
-                draw_rectangle(x, y, self.cell_size, self.cell_size, self.array[i][j])
-                draw_rectangle(x, y, self.cell_size, self.cell_size, self.temp_array[i][j]) # Draw current tetrimino
+                draw_rectangle(x + self.center.x, y + self.center.y, self.cell_size, self.cell_size, self.array[i][j])
+                draw_rectangle(x + self.center.x, y + self.center.y, self.cell_size, self.cell_size, self.temp_array[i][j]) # Draw current tetrimino
                 x += self.cell_size
             x = (screen_width // 2) - (grid_width // 2)
             y += self.cell_size
         
         # Draw vertical lines
-        x = (screen_width // 2) - (grid_width // 2)
-        top_y = (screen_height // 2) - (grid_height // 2)
-        bottom_y = (screen_height // 2) + (grid_height // 2)
+        x = (screen_width // 2) - (grid_width // 2) + self.center.x
+        top_y = (screen_height // 2) - (grid_height // 2) + self.center.y
+        bottom_y = (screen_height // 2) + (grid_height // 2) + self.center.y
         
         for _ in range(len(self.array[0]) + 1):
             draw_line(x, top_y, x, bottom_y, GRAY)
             x += self.cell_size
         
         # Draw horizontal lines
-        y = (screen_height // 2) - (grid_height // 2)
-        left_x = (screen_width // 2) - (grid_width // 2)
-        right_x = (screen_width // 2) + (grid_width // 2)
+        y = (screen_height // 2) - (grid_height // 2) + self.center.y
+        left_x = (screen_width // 2) - (grid_width // 2) + self.center.x
+        right_x = (screen_width // 2) + (grid_width // 2) + self.center.x
         
         for _ in range(len(self.array) + 1):
             draw_line(left_x, y, right_x, y, GRAY)
@@ -171,7 +173,7 @@ class Grid:
             if is_complete == True:
                 complete_lines += 1
                 for row_above in range(r, 0, -1): # All the rows down to and including the complete one (except for the top one)
-                    self.array[row_above] = self.array[row_above - 1] # Set it equal to the row immediately above, dropping it down by one
+                    self.array[row_above] = list(self.array[row_above - 1]) # Set it equal to the row immediately above, dropping it down by one
         
         return complete_lines
     

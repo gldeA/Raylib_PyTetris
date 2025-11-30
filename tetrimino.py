@@ -131,15 +131,19 @@ class Tetrimino:
             case TetriminoVariant.RL_STAIR:   return RED
     
     @staticmethod
-    def new():
+    def new(start_position: Vector2i = Vector2i(0, 0)):
         """Constructs a new "random" Tetrimino.
-        Uses the bag system, where a bag of every Tetrimino variant is generated and then randomly pulled from until empty, then refilled."""
+        Uses the bag system, where a bag of every Tetrimino variant is generated and then randomly pulled from until empty, then refilled.
+        
+        Args:
+            start_position (Vector2i): The postion to start the tetrimino at. Defaults to (0, 0).
+        """
         if len(Tetrimino.bag) == 0:
             Tetrimino.bag = list(TetriminoVariant)[1:]
         random.shuffle(Tetrimino.bag)
         variant = Tetrimino.bag.pop()
         rotation = Rotation(random.randint(0, 3))
-        return Tetrimino(variant, rotation, Vector2i(5, 0))
+        return Tetrimino(variant, rotation, start_position)
     
     def __str__(self):
         return str(self.variant[self.rotation])
