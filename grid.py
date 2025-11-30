@@ -68,7 +68,10 @@ class Grid:
         Returns:
             Vector2i: The direction to move the tetrimino to get it back in bounds
         """
-        possible_directions = [Vector2i(0, 0), Vector2i(0, -1), Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1)]
+        possible_directions = [Vector2i(0, 0), Vector2i(0, -1), Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1),
+                                               Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1), 
+                                               Vector2i(0, -2), Vector2i(2, 0), Vector2i(-2, 0), Vector2i(0, 2),
+                                               Vector2i(0, -3), Vector2i(3, 0), Vector2i(-3, 0), Vector2i(0, 3)]
         for direction in possible_directions:
             if self.can_tetrimino_move(tetrimino, direction):
                 return direction
@@ -151,12 +154,12 @@ class Grid:
         Returns:
             int: how many lines were completed as a result
         """
-        for i in range(len(tetrimino.get_array())):
-            for j in range(len(tetrimino.get_array()[0])):
-                if tetrimino.get_array()[i][j] == True:
-                    cell_to_set: Vector2i = Vector2i(tetrimino.position[0] + j, tetrimino.position[1] + i)
+        for i in range(len(tetrimino.get_array()[0])):
+            for j in range(len(tetrimino.get_array())):
+                if tetrimino.get_array()[j][i] == True:
+                    cell_to_set: Vector2i = Vector2i(tetrimino.position[0] + i, tetrimino.position[1] + j)
                     assert self.getV(cell_to_set) == BLANK # Don't overwrite an already written cell
-                    self.array[cell_to_set.y][cell_to_set.x] = tetrimino.get_color()
+                    self.set_cell(cell_to_set, tetrimino.get_color())
         
         # Check for line
         complete_lines = 0

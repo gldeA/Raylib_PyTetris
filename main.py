@@ -4,7 +4,7 @@ from grid import Grid
 from vector2i import Vector2i
 from tetrimino import Tetrimino, TetriminoVariant
 
-# TODO: fix bugs (line going to top, crash on block placement, line piece can esape bounds)
+# TODO: fix bugs (line going to top, crash on block placement)
 
 def main():
     FAST_FALL_DELAY = 50
@@ -59,7 +59,8 @@ def main():
         # Rotate
         if is_key_pressed(KeyboardKey.KEY_UP) or is_key_pressed(KeyboardKey.KEY_W):
             current_tetrimino.rotation += 1
-            grid.try_move_back_in_bounds(current_tetrimino)
+            if not grid.try_move_back_in_bounds(current_tetrimino):
+                current_tetrimino.rotation -= 1
             
         # Fast fall
         if is_key_pressed(KeyboardKey.KEY_DOWN) or is_key_pressed(KeyboardKey.KEY_S):
