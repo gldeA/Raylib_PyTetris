@@ -98,6 +98,8 @@ class TetriminoVariant(Enum):
                               [True, False]]}
 
 class Tetrimino:
+    bag = [] # Used to make Tetrimino generation feel fair, as explained in new()
+    
     """Stores the possible different tetriminoes"""
     def __init__(self, variant: TetriminoVariant = TetriminoVariant.NULL, rotation: Rotation = Rotation(0), position: Vector2i = Vector2i(0, 0)):
         self.variant = variant
@@ -130,8 +132,12 @@ class Tetrimino:
     
     @staticmethod
     def new():
-        """Constructs a new random Tetrimino"""
-        variant = random.choice(list(TetriminoVariant)[1:])
+        """Constructs a new "random" Tetrimino.
+        Uses the bag system, where a bag of every Tetrimino variant is generated and then randomly pulled from until empty, then refilled."""
+        if len(Tetrimino.bag) == 0:
+            Tetrimino.bag = list(TetriminoVariant)[1:]
+        random.shuffle(Tetrimino.bag)
+        variant = Tetrimino.bag.pop()
         rotation = Rotation(random.randint(0, 3))
         return Tetrimino(variant, rotation, Vector2i(5, 0))
     
