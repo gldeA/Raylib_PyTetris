@@ -104,7 +104,7 @@ class Grid:
         for i in range(len(current_tetrimino.get_array())):
             for j in range(len(current_tetrimino.get_array()[0])):
                 if current_tetrimino.get_array()[i][j] == True:
-                    self.temp_array[current_tetrimino.position[1] + i][current_tetrimino.position[0] + j] = current_tetrimino.color
+                    self.temp_array[current_tetrimino.position[1] + i][current_tetrimino.position[0] + j] = current_tetrimino.get_color()
         
         # Draw cells
         x: int = (screen_width // 2) - (grid_width // 2)
@@ -142,29 +142,35 @@ class Grid:
     def getV(self, pos: Vector2i) -> Color:
         return self.get(pos.x, pos.y)
     
-    def freeze_tetrimino(self, tetrimino: Tetrimino):
+    def freeze_tetrimino(self, tetrimino: Tetrimino) -> int:
         """Adds a tetrimino to the persistent grid and checks for a complete line
 
         Args:
             tetrimino (Tetrimino): The tetrimino to add
+            
+        Returns:
+            int: how many lines were completed as a result
         """
         for i in range(len(tetrimino.get_array())):
             for j in range(len(tetrimino.get_array()[0])):
                 if tetrimino.get_array()[i][j] == True:
                     cell_to_set: Vector2i = Vector2i(tetrimino.position[0] + j, tetrimino.position[1] + i)
                     assert self.getV(cell_to_set) == BLANK # Don't overwrite an already written cell
-                    self.array[cell_to_set.y][cell_to_set.x] = tetrimino.color
+                    self.array[cell_to_set.y][cell_to_set.x] = tetrimino.get_color()
         
         # Check for line
+        complete_lines = 0
         for r in range(len(self.array)):
             is_complete = True
             for c in range(len(self.array[0])):
                 if self.get(c, r) == BLANK:
                     is_complete = False
             if is_complete == True:
+                complete_lines += 1
                 for row_above in range(r, 0, -1): # All the rows down to and including the complete one (except for the top one)
-                    print(row_above)
                     self.array[row_above] = self.array[row_above - 1] # Set it equal to the row immediately above, dropping it down by one
+        
+        return complete_lines
     
     def __str__(self):
         output = ""

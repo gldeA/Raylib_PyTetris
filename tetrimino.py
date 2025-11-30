@@ -22,7 +22,7 @@ class Rotation:
         
         def __eq__(self, other):
             return isinstance(other, Rotation) and self.current_direction == other.current_direction
-    
+
 class TetriminoVariant(Enum):
     NULL = {Rotation(0): [[]],
             Rotation(1): [[]],
@@ -99,10 +99,9 @@ class TetriminoVariant(Enum):
 
 class Tetrimino:
     """Stores the possible different tetriminoes"""
-    def __init__(self, variant: TetriminoVariant = TetriminoVariant.NULL, rotation: Rotation = Rotation(0), color: Color = BLACK, position: Vector2i = Vector2i(0, 0)):
+    def __init__(self, variant: TetriminoVariant = TetriminoVariant.NULL, rotation: Rotation = Rotation(0), position: Vector2i = Vector2i(0, 0)):
         self.variant = variant
         self.rotation = rotation
-        self.color = color
         self.position = position
     
     def get_array(self) -> list:
@@ -113,13 +112,28 @@ class Tetrimino:
         """
         return self.variant.value[self.rotation]
     
+    def get_color(self) -> Color:
+        """Get the color of this variant of Tetrimino
+
+        Returns:
+            Color: The correct color
+        """
+        match self.variant:
+            case TetriminoVariant.NULL:       return BLANK
+            case TetriminoVariant.LINE:       return BLUE
+            case TetriminoVariant.L:          return ORANGE
+            case TetriminoVariant.INVERTED_L: return DARKBLUE
+            case TetriminoVariant.T:          return PURPLE
+            case TetriminoVariant.SQUARE:     return YELLOW
+            case TetriminoVariant.LR_STAIR:   return GREEN
+            case TetriminoVariant.RL_STAIR:   return RED
+    
     @staticmethod
     def new():
         """Constructs a new random Tetrimino"""
         variant = random.choice(list(TetriminoVariant)[1:])
         rotation = Rotation(random.randint(0, 3))
-        color = random.choice([RED, GREEN, BLUE, YELLOW, PURPLE, ORANGE])
-        return Tetrimino(variant, rotation, color, Vector2i(5, 0))
+        return Tetrimino(variant, rotation, Vector2i(5, 0))
     
     def __str__(self):
         return str(self.variant[self.rotation])

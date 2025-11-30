@@ -4,6 +4,8 @@ from grid import Grid
 from vector2i import Vector2i
 from tetrimino import Tetrimino, TetriminoVariant
 
+# TODO: Make falling smoother (switch to floats), make which tetrimino feel more random (keep a log and weight the outcome), fix bugs (line going to top, crash on block placement)
+
 def main():
     FAST_FALL_DELAY = 50
     STARTING_DELAY = 1000
@@ -18,6 +20,8 @@ def main():
     
     has_moved_down: bool = False
     
+    score = 0
+    
     fall_delay = 1000 # The number of milliseconds to delay between each fall tick, controls fall speed
     fall_delay_function = lambda time: int(STARTING_DELAY / ((DELAY_DECAY_RATE * time)**2 + 1)) # https://www.desmos.com/calculator/5xb1rmspe0
     
@@ -27,7 +31,9 @@ def main():
             if not has_moved_down: # Prevent from moving multiple times in a single frame
                 has_hit_bottom = not grid.try_move_tetrimino(current_tetrimino, Vector2i(0, 1))
                 if has_hit_bottom:
-                    grid.freeze_tetrimino(current_tetrimino)
+                    grid.try_move_back_in_bounds(current_tetrimino) # Just in case
+                    score += grid.freeze_tetrimino(current_tetrimino)
+                    print(score)
                     current_tetrimino = Tetrimino.new()
                 has_moved_down = True
         else:
