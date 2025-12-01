@@ -18,13 +18,16 @@ class Grid:
         self.cell_size: int = cell_size
         self.center = center
     
-    def set_cell(self, cell: Vector2i, color: Color):
-        self.array[cell.y][cell.x] = color
+    def set_cell(self, pos: Vector2i, color: Color):
+        """Sets the cell at the given position to the given color"""
+        self.array[pos.y][pos.x] = color
         
     def is_in_bounds(self, x: int, y: int) -> bool:
+        """Whether the given (x, y) position is within the bounds ofthe Grid"""
         return y >= 0 and x >= 0 and y < len(self.array) and x < len(self.array[0])
 
     def is_in_boundsV(self, position: Vector2i) -> bool:
+        """Whether the given Vector2i position is within the bounds of the Grid"""
         return self.is_in_bounds(position.x, position.y)
     
     def can_tetrimino_move(self, tetrimino: Tetrimino, direction: Vector2i = Vector2i(0, 0)) -> bool:
@@ -104,14 +107,14 @@ class Grid:
         grid_width = len(self.array[0]) * self.cell_size
         grid_height = len(self.array) * self.cell_size
         
-        # Draw Current Tetrimino
+        # Add current Tetrimino to temp array
         self.temp_array = [[BLANK for _ in range(len(self.array[0]))] for _ in range(len(self.array))]
         for i in range(len(current_tetrimino.get_array())):
             for j in range(len(current_tetrimino.get_array()[0])):
                 if current_tetrimino.get_array()[i][j] == True:
                     self.temp_array[current_tetrimino.position[1] + i][current_tetrimino.position[0] + j] = current_tetrimino.get_color()
         
-        # Draw cells
+        # Draw filled-in cells
         x: int = (screen_width // 2) - (grid_width // 2)
         y: int = (screen_height // 2) - (grid_height // 2)
         
@@ -142,9 +145,11 @@ class Grid:
             y += self.cell_size
     
     def get(self, x: int, y: int) -> Color:
+        """Get the color at (x, y)"""
         return self.array[y][x]
     
     def getV(self, pos: Vector2i) -> Color:
+        """Get the color at pos (get, but with a Vector2i insted of separate ints)"""
         return self.get(pos.x, pos.y)
     
     def freeze_tetrimino(self, tetrimino: Tetrimino) -> int:
@@ -156,11 +161,12 @@ class Grid:
         Returns:
             int: how many lines were completed as a result
         """
+        # Add the tetrimino to the persistent grid
         for i in range(len(tetrimino.get_array()[0])):
             for j in range(len(tetrimino.get_array())):
                 if tetrimino.get_array()[j][i] == True:
                     cell_to_set: Vector2i = Vector2i(tetrimino.position[0] + i, tetrimino.position[1] + j)
-                    if self.getV(cell_to_set) != BLANK: # Overwriting another cell, should be a loss or a bug
+                    if self.getV(cell_to_set) != BLANK: # Overwriting an already-filled cell, should be a loss (Tetrimino spawned on top of another)
                         return -1
                     self.set_cell(cell_to_set, tetrimino.get_color())
         

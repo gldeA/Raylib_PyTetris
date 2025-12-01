@@ -3,6 +3,8 @@ from pyray import *
 from vector2i import Vector2i
 import random
 
+# TODO: Docstrings for this and everything else
+
 class Rotation:
         def __init__(self, direction: int = 0):
             self.directions = ["up", "right", "down", "left"]

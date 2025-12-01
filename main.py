@@ -39,12 +39,10 @@ def main():
                     if has_hit_bottom:
                         amount_scored = grid.freeze_tetrimino(current_tetrimino)
                         if amount_scored == -1: # Either a loss or a bug
-                            print("Game over :(")
                             game_over = True
                         if amount_scored == 4:
                             amount_scored += 2 # 2 bonus points for getting a tetris, 4 rows in one move
                         score += amount_scored
-                        print(score)
                         current_tetrimino = next_tetrimino
                         current_tetrimino.position = Vector2i(4, 0)
                         next_tetrimino = Tetrimino.new()
