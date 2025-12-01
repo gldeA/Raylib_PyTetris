@@ -4,8 +4,6 @@ from grid import Grid
 from vector2i import Vector2i
 from tetrimino import Tetrimino, TetriminoVariant
 
-# TODO: fix bugs (line going to top, crash on block placement), show score
-
 def main():
     FAST_FALL_DELAY = 60
     STARTING_DELAY = 500
@@ -27,61 +25,86 @@ def main():
     
     score = 0
     
+    game_over = False
+    
     fall_delay = 1000 # The number of milliseconds to delay between each fall tick, controls fall speed
     fall_delay_function = lambda time: int(STARTING_DELAY / ((DELAY_DECAY_RATE * time)**2 + 1)) # https://www.desmos.com/calculator/5xb1rmspe0
     
     while not window_should_close():
         # Move current tetrimino down if possible
-        if int(get_time() * 1000) % fall_delay == 0:
-            if not has_moved_down: # Prevent from moving multiple times in a single frame
-                has_hit_bottom = not grid.try_move_tetrimino(current_tetrimino, Vector2i(0, 1))
-                if has_hit_bottom:
-                    grid.try_move_back_in_bounds(current_tetrimino) # Just in case
-                    amount_scored = grid.freeze_tetrimino(current_tetrimino)
-                    if amount_scored == 4:
-                        amount_scored += 2 # 2 bonus points for getting a tetris, 4 rows in one move
-                    score += amount_scored
-                    print(score)
-                    current_tetrimino = next_tetrimino
-                    current_tetrimino.position = Vector2i(4, 0)
-                    next_tetrimino = Tetrimino.new()
-                has_moved_down = True
-        else:
-            has_moved_down = False
-                
-        # Move left/right
-        if is_key_pressed(KeyboardKey.KEY_LEFT) or is_key_pressed(KeyboardKey.KEY_A):
-            lr_press_time = get_time()
-            grid.try_move_tetrimino(current_tetrimino, Vector2i(-1, 0))
-        if is_key_pressed(KeyboardKey.KEY_RIGHT) or is_key_pressed(KeyboardKey.KEY_D):
-            lr_press_time = get_time()
-            grid.try_move_tetrimino(current_tetrimino, Vector2i(1, 0))
-        if (is_key_down(KeyboardKey.KEY_LEFT) or is_key_down(KeyboardKey.KEY_A)) and int((get_time() - lr_press_time) * 1000 + 1) % 125 == 0:
-            grid.try_move_tetrimino(current_tetrimino, Vector2i(-1, 0))
-        if (is_key_down(KeyboardKey.KEY_RIGHT) or is_key_down(KeyboardKey.KEY_D)) and int((get_time() - lr_press_time) * 1000 + 1) % 125 == 0:
-            grid.try_move_tetrimino(current_tetrimino, Vector2i(1, 0))
-        
-        # Rotate
-        if is_key_pressed(KeyboardKey.KEY_UP) or is_key_pressed(KeyboardKey.KEY_W):
-            current_tetrimino.rotation += 1
-            if not grid.try_move_back_in_bounds(current_tetrimino):
-                current_tetrimino.rotation -= 1
+        if not game_over:
+            if int(get_time() * 1000) % fall_delay == 0:
+                if not has_moved_down: # Prevent from moving multiple times in a single frame
+                    has_hit_bottom = not grid.try_move_tetrimino(current_tetrimino, Vector2i(0, 1))
+                    if has_hit_bottom:
+                        amount_scored = grid.freeze_tetrimino(current_tetrimino)
+                        if amount_scored == -1: # Either a loss or a bug
+                            print("Game over :(")
+                            game_over = True
+                        if amount_scored == 4:
+                            amount_scored += 2 # 2 bonus points for getting a tetris, 4 rows in one move
+                        score += amount_scored
+                        print(score)
+                        current_tetrimino = next_tetrimino
+                        current_tetrimino.position = Vector2i(4, 0)
+                        next_tetrimino = Tetrimino.new()
+                    has_moved_down = True
+            else:
+                has_moved_down = False
+                    
+            # Move left/right
+            if is_key_pressed(KeyboardKey.KEY_LEFT) or is_key_pressed(KeyboardKey.KEY_A):
+                lr_press_time = get_time()
+                grid.try_move_tetrimino(current_tetrimino, Vector2i(-1, 0))
+            if is_key_pressed(KeyboardKey.KEY_RIGHT) or is_key_pressed(KeyboardKey.KEY_D):
+                lr_press_time = get_time()
+                grid.try_move_tetrimino(current_tetrimino, Vector2i(1, 0))
+            if (is_key_down(KeyboardKey.KEY_LEFT) or is_key_down(KeyboardKey.KEY_A)) and int((get_time() - lr_press_time) * 1000 + 1) % 125 == 0:
+                grid.try_move_tetrimino(current_tetrimino, Vector2i(-1, 0))
+            if (is_key_down(KeyboardKey.KEY_RIGHT) or is_key_down(KeyboardKey.KEY_D)) and int((get_time() - lr_press_time) * 1000 + 1) % 125 == 0:
+                grid.try_move_tetrimino(current_tetrimino, Vector2i(1, 0))
             
-        # Fast fall
-        if is_key_pressed(KeyboardKey.KEY_DOWN) or is_key_pressed(KeyboardKey.KEY_S):
-            grid.try_move_tetrimino(current_tetrimino, Vector2i(0, 1))
-        if is_key_down(KeyboardKey.KEY_DOWN) or is_key_down(KeyboardKey.KEY_S):
-            fall_delay = min(FAST_FALL_DELAY, fall_delay_function(get_time())) # Fast fall, but don't slow down if already faster than fast fall
-        else:
-            fall_delay = fall_delay_function(score)
+            # Rotate
+            if is_key_pressed(KeyboardKey.KEY_UP) or is_key_pressed(KeyboardKey.KEY_W):
+                current_tetrimino.rotation += 1
+                if not grid.try_move_back_in_bounds(current_tetrimino):
+                    current_tetrimino.rotation -= 1
+                
+            # Fast fall
+            if is_key_pressed(KeyboardKey.KEY_DOWN) or is_key_pressed(KeyboardKey.KEY_S):
+                grid.try_move_tetrimino(current_tetrimino, Vector2i(0, 1))
+            if is_key_down(KeyboardKey.KEY_DOWN) or is_key_down(KeyboardKey.KEY_S):
+                fall_delay = min(FAST_FALL_DELAY, fall_delay_function(score)) # Fast fall, but don't slow down if already faster than fast fall
+            else:
+                fall_delay = fall_delay_function(score)
         
         begin_drawing()
-        clear_background(WHITE)
+        if not game_over:
+            clear_background(WHITE)
+        else:
+            clear_background(LIGHTGRAY)
         
         grid.draw(current_tetrimino)
         draw_text(f"Score: {score}", (get_screen_width() // 2) + 170, (get_screen_height() // 2) - 320, 28, BLACK)
         draw_text("Next:", (get_screen_width() // 2) + 170, (get_screen_height() // 2) - 290, 28, BLACK)
         minigrid.draw(next_tetrimino)
+        
+        if game_over:
+            draw_text("You Lost.", get_screen_width() // 2 - 150, get_screen_height() // 2 - 200, 64, Color(127, 0, 0, 255))
+            draw_text("Play Again?", get_screen_width() // 2 - 140, get_screen_height() // 2 - 100, 48, BLACK)
+            draw_rectangle(get_screen_width() // 2 - 157, get_screen_height() // 2, 110, 48, GREEN)
+            draw_text("YES", get_screen_width() // 2 - 150, get_screen_height() // 2, 48, BLACK)
+            draw_rectangle(get_screen_width() // 2 + 70, get_screen_height() // 2, 80, 48, RED)
+            draw_text("NO", get_screen_width() // 2 + 80, get_screen_height() // 2, 48, BLACK)
+            
+            if Vector2i.from_vector2(get_mouse_position()).within(Vector2i(get_screen_width() // 2 - 157, get_screen_height() // 2), Vector2i(get_screen_width() // 2 - 47, get_screen_height() // 2 + 48)) and is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
+                grid = Grid(Vector2i(10, 20), 32)
+                current_tetrimino = Tetrimino.new(Vector2i(4, 0))
+                next_tetrimino = Tetrimino.new()
+                score = 0
+                game_over = False
+            elif Vector2i.from_vector2(get_mouse_position()).within(Vector2i(get_screen_width() // 2 + 70, get_screen_height() // 2), Vector2i(get_screen_width() // 2 + 150, get_screen_height() // 2 + 48)) and is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
+                close_window()
         
         end_drawing()
         

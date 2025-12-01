@@ -160,7 +160,8 @@ class Grid:
             for j in range(len(tetrimino.get_array())):
                 if tetrimino.get_array()[j][i] == True:
                     cell_to_set: Vector2i = Vector2i(tetrimino.position[0] + i, tetrimino.position[1] + j)
-                    assert self.getV(cell_to_set) == BLANK # Don't overwrite an already written cell
+                    if self.getV(cell_to_set) != BLANK: # Overwriting another cell, should be a loss or a bug
+                        return -1
                     self.set_cell(cell_to_set, tetrimino.get_color())
         
         # Check for line
