@@ -41,9 +41,9 @@ class TetriminoVariant(Enum):
                           [True],
                           [True]],
             Rotation(3): [[True, True, True, True]]}
-    L = {Rotation(0): [[True, False],
-                       [True, False],
-                       [True, True]],
+    L = {Rotation(0):    [[True, False],
+                          [True, False],
+                          [True, True]],
             Rotation(1): [[True, True, True],
                           [True, False, False]],
             Rotation(2): [[True, True],
@@ -51,18 +51,18 @@ class TetriminoVariant(Enum):
                           [False, True]],
             Rotation(3): [[False, False, True],
                           [True, True, True]]}
-    INVERTED_L = {Rotation(0): [[False, True],
-                                [False, True],
-                                [True, True]],
-                  Rotation(1): [[True, False, False],
-                                [True, True, True]],
-                  Rotation(2): [[True, True],
-                                [True, False],
-                                [True, False]],
+    INVERTED_L = {Rotation(0):  [[False, True],
+                                 [False, True],
+                                 [True, True]],
+                  Rotation(1):  [[True, False, False],
+                                 [True, True, True]],
+                  Rotation(2):  [[True, True],
+                                 [True, False],
+                                 [True, False]],
                    Rotation(3): [[True, True, True],
                                  [False, False, True]]}
-    T = {Rotation(0): [[False, True, False],
-                       [True, True, True]],
+    T = {Rotation(0):    [[False, True, False],
+                          [True, True, True]],
             Rotation(1): [[True, False],
                           [True, True],
                           [True, False]],
@@ -143,6 +143,7 @@ class Tetrimino:
         """
         if len(Tetrimino.bag) == 0:
             Tetrimino.bag = list(TetriminoVariant)[1:]
+        
         random.shuffle(Tetrimino.bag)
         variant = Tetrimino.bag.pop()
         rotation = Rotation(random.randint(0, 3))

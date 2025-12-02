@@ -4,17 +4,18 @@ from vector2i import Vector2i
 from tetrimino import Tetrimino
 
 class Grid:
-    """A class that contains the game grid, should have only one instance"""    
-    def __init__(self, cells: Vector2i, cell_size: int, center: Vector2i = Vector2i(0, 0)):
+    """A class that contains a game grid. Handles drawing and stores which cells are filled."""
+    
+    def __init__(self, shape: Vector2i, cell_size: int, center: Vector2i = Vector2i(0, 0)):
         """Constructs a new Grid with the given number of cells and the cell_size
 
         Args:
-            cells (Vector2i): (rows, columns), the size of the grid
+            shape (Vector2i): (rows, columns), the size/shape of the grid
             cell_size (int): the size of each square cell in pixels, used for drawing
-            center (Vector2i): The center position, offset from the center. Defaults to (0, 0)
+            center (Vector2i): The center position, offset from the center of the screen. Defaults to (0, 0).
         """
-        self.array = [[BLANK for _ in range(cells[0])] for _ in range(cells[1])]
-        self.temp_array = [[BLANK for _ in range(cells[0])] for _ in range(cells[1])] # Used for drawing the currently moving tetrimino, cleared every draw
+        self.array = [[BLANK for _ in range(shape[0])] for _ in range(shape[1])] # Used for storing the filled in spots in the grid, persistent
+        self.temp_array = [[BLANK for _ in range(shape[0])] for _ in range(shape[1])] # Used for drawing the currently moving tetrimino, transient/nonpersistent
         self.cell_size: int = cell_size
         self.center = center
     
@@ -44,13 +45,13 @@ class Grid:
         for i in range(len(tetrimino.get_array())):
             for j in range(len(tetrimino.get_array()[0])):
                 cell_to_check: Vector2i = Vector2i(tetrimino.position[0] + j, tetrimino.position[1] + i)
-                # If this cell is out of bounds or occupied
+                # If this cell is out of bounds or occupied, it can't move
                 if not self.is_in_boundsV(cell_to_check + direction) or (tetrimino.get_array()[i][j] == True and self.getV(cell_to_check + direction) != BLANK):
                     can_move = False
         return can_move
     
     def try_move_tetrimino(self, tetrimino: Tetrimino, direction: Vector2i) -> bool:
-        """Attempts to move a tetrimino in the given direction, mutating the tetrimino if the desired movement is valid.
+        """Attempts to move a tetrimino in the given direction, mutating the tetrimino if the desired movement is valid/successful.
 
         Args:
             tetrimino (Tetrimino): The tetrimino to attempt to move
@@ -62,6 +63,8 @@ class Grid:
         if self.can_tetrimino_move(tetrimino, direction):
             tetrimino.position += direction
             return True
+        else:
+            return False
     
     def back_in_bounds_dir(self, tetrimino: Tetrimino, move_direction: Vector2i = Vector2i(0, 0)) -> Vector2i:
         """Returns the direction that the tetrimino should move to get back in bounds
@@ -73,10 +76,10 @@ class Grid:
         Returns:
             Vector2i: The direction to move the tetrimino to get it back in bounds
         """
-        possible_directions = [Vector2i(0, 0), Vector2i(0, -1), Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1),
-                                               Vector2i(1, 1), Vector2i(-1, 1), Vector2i(1, -1), Vector2i(-1, -1), 
-                                               Vector2i(0, -2), Vector2i(2, 0), Vector2i(-2, 0), Vector2i(0, 2),
-                                               Vector2i(0, -3), Vector2i(3, 0), Vector2i(-3, 0), Vector2i(0, 3)]
+        possible_directions = [Vector2i(0, 0), Vector2i(0, -1), Vector2i( 1, 0), Vector2i(-1,  0), Vector2i( 0,  1),
+                                               Vector2i(1,  1), Vector2i(-1, 1), Vector2i( 1, -1), Vector2i(-1, -1), 
+                                               Vector2i(0, -2), Vector2i( 2, 0), Vector2i(-2,  0), Vector2i( 0,  2),
+                                               Vector2i(0, -3), Vector2i( 3, 0), Vector2i(-3,  0), Vector2i( 0,  3)]
         for direction in possible_directions:
             if self.can_tetrimino_move(tetrimino, direction):
                 return direction
@@ -94,7 +97,7 @@ class Grid:
             bool: Whether the movement was successful
         """
         bounds_dir = self.back_in_bounds_dir(tetrimino, move_direction)
-        if bounds_dir is not None: # No possible movement
+        if bounds_dir is not None: # If it can get back in bounds, do so
             tetrimino.position += (move_direction + bounds_dir)
             return True
         else:
@@ -170,13 +173,14 @@ class Grid:
                         return -1
                     self.set_cell(cell_to_set, tetrimino.get_color())
         
-        # Check for line
+        # Check for complete lines and remove them
         complete_lines = 0
         for r in range(len(self.array)):
             is_complete = True
             for c in range(len(self.array[0])):
                 if self.get(c, r) == BLANK:
                     is_complete = False
+            
             if is_complete == True:
                 complete_lines += 1
                 for row_above in range(r, 0, -1): # All the rows down to and including the complete one (except for the top one)
