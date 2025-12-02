@@ -3,29 +3,30 @@ from pyray import *
 from vector2i import Vector2i
 import random
 
-# TODO: Docstrings for this and everything else
-
 class Rotation:
-        def __init__(self, direction: int = 0):
-            self.directions = ["up", "right", "down", "left"]
-            self.current_direction = direction
-        
-        def __add__(self, other):
-            return Rotation((self.current_direction + 1) % 4)
-        
-        def __sub__(self, other):
-            return Rotation((self.current_direction - 1) % 4)
-        
-        def get(self) -> str:
-            return self.directions[self.current_direction]
-        
-        def __hash__(self):
-            return self.current_direction
-        
-        def __eq__(self, other):
-            return isinstance(other, Rotation) and self.current_direction == other.current_direction
+    """A helper class for Tetrimino, stores a rotation and allows for incrementation to rotate to the right and vice versa."""
+    DIRECTIONS = ["up", "right", "down", "left"]
+    
+    def __init__(self, direction: int = 0):
+        self.current_direction = direction
+    
+    def __add__(self, other):
+        return Rotation((self.current_direction + 1) % 4)
+    
+    def __sub__(self, other):
+        return Rotation((self.current_direction - 1) % 4)
+    
+    def get(self) -> str:
+        return Rotation.DIRECTIONS[self.current_direction]
+    
+    def __hash__(self):
+        return self.current_direction
+    
+    def __eq__(self, other):
+        return isinstance(other, Rotation) and self.current_direction == other.current_direction
 
 class TetriminoVariant(Enum):
+    """An enum to store which variant of tetrimino a Tetrimino is. Stores the shapes/possible rotations of each variant."""
     NULL = {Rotation(0): [[]],
             Rotation(1): [[]],
             Rotation(2): [[]],
@@ -100,9 +101,9 @@ class TetriminoVariant(Enum):
                               [True, False]]}
 
 class Tetrimino:
+    """A Tetrimino on the grid. Stores the variant/type and the current rotation & position."""
     bag = [] # Used to make Tetrimino generation feel fair, as explained in new()
     
-    """Stores the possible different tetriminoes"""
     def __init__(self, variant: TetriminoVariant = TetriminoVariant.NULL, rotation: Rotation = Rotation(0), position: Vector2i = Vector2i(0, 0)):
         self.variant = variant
         self.rotation = rotation
